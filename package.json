@@ -33,12 +33,14 @@
     "co": "^4.6.0",
     "dynamodb-promise": "^1.0.1",
     "folktale": "^2.0.1",
+    "fpo": "^6.1.1",
     "ip": "^1.1.5",
     "ip-address": "^5.8.8",
     "lodash": "^4.17.4",
     "math-uint32-to-binary-string": "^1.0.0",
     "number-convert": "^1.0.0",
     "ramda": "^0.25.0",
+    "rollup-plugin-flow": "^1.1.1",
     "superagent": "^3.6.3"
   },
   "devDependencies": {
@@ -46,6 +48,7 @@
     "babel-core": "^6.17.0",
     "babel-eslint": "^7.0.0",
     "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-preset-flow": "^6.23.0",
     "babel-preset-latest": "^6.16.0",
     "babel-preset-stage-0": "^6.16.0",
     "babel-register": "^6.16.3",
@@ -55,6 +58,7 @@
     "eslint": "^3.8.0",
     "eslint-config-airbnb-base": "^10.0.1",
     "eslint-plugin-import": "^2.2.0",
+    "flow-bin": "^0.57.2",
     "istanbul": "^1.1.0-alpha.1",
     "mocha": "^3.1.2",
     "rollup": "^0.36.3",
@@ -63,6 +67,7 @@
   },
   "scripts": {
     "lint": "eslint src test tools",
+    "flow": "flow",
     "test": "mocha --compilers js:babel-register",
     "test:watch": "mocha --compilers js:babel-register --reporter min --watch",
     "test:cover": "babel-node ./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha",

@@ -22,11 +22,11 @@
 
 ### License
 
-Copyright © 2015-2016 Kriasoft, LLC. This source code is licensed under the MIT license found in
+Copyright © 2015-2016 Michael Iglesias. This source code is licensed under the MIT license found in
 the [LICENSE.txt](https://github.com/Lionshead-io/lionsnet-subnetting-calculator-serverless-aws/blob/master/LICENSE.txt) file.
 The documentation to the project is licensed under the [CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/)
 license.
 
 
 ---
-Made with ♥ by Konstantin Tarkus ([@realMIglesias](https://twitter.com/realMIglesias)) and [contributors](https://github.com/Lionshead-io/lionsnet-subnetting-calculator-serverless-aws/graphs/contributors)
+Made with ♥ by Michael Iglesias (Lionshead Consulting Group) ([@realMIglesias](https://twitter.com/realMIglesias)) and [contributors](https://github.com/Lionshead-io/lionsnet-subnetting-calculator-serverless-aws/graphs/contributors)

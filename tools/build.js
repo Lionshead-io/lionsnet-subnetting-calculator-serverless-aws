@@ -14,6 +14,7 @@ const del = require('del');
 const rollup = require('rollup');
 const babel = require('rollup-plugin-babel');
 const pkg = require('../package.json');
+const flow = require('rollup-plugin-flow');
 
 let promise = Promise.resolve();
 
@@ -25,7 +26,7 @@ promise = promise.then(() => del(['dist/*']));
   promise = promise.then(() => rollup.rollup({
     entry: 'src/index.js',
     external: Object.keys(pkg.dependencies),
-    plugins: [babel(Object.assign(pkg.babel, {
+    plugins: [flow(), babel(Object.assign(pkg.babel, {
       babelrc: false,
       exclude: 'node_modules/**',
       runtimeHelpers: true,
