@@ -1,5 +1,5 @@
 /**
- * addBinary.spec.js
+ * hostsPerSubnet.spec.js
  *
  *
  * This source code is licensed under the MIT license found in the
@@ -19,10 +19,16 @@ describe('hostsPerSubnetTransformer()', () => {
   });
 
   it('should return the value of "hostsPerVpc" when "hostsPerSubnet" value is greater than "hostsPerVpc"', () => {
-    const hostsPerSubnet = 555;
+    const hostsPerSubnet = 300;
     const hostsPerVpc = 256;
 
     expect(hostsPerSubnetTransformer(hostsPerSubnet, hostsPerVpc)).to.be.equal(256);
+  });
+
+  it('should return the hostsPerSubnet of the rounded down corresponding CIDR prefix (ex. 20 hostsPerSubnet will return 16 because it is the rounded down to a CIDR prefix of /28 (16 host addresses)', () => {
+    const hostsPerSubnet = 20;
+
+    expect(hostsPerSubnetTransformer(hostsPerSubnet)).to.be.equal(16);
   });
 
 });

@@ -10,5 +10,5 @@ const Address4 = require('ip-address').Address4;
  * @returns {Validation}
  */
 export default function defaultWorkspaceValidator(workspace: string): Validation {
-  return (Address4.isValid(workspace)) ? Validation.Success() : Validation.Failure([`${workspace} is not a valid CIDR Address.`]);
+  return ((new Address4(workspace)).isValid()) ? Validation.Success() : Validation.Failure([`${workspace} is not a valid CIDR Address.`]);
 };

@@ -1,7 +1,7 @@
 // @flow
-import { HOSTS_TO_PREFIX, PREFIX_TO_HOSTS } from './cidrEnum';
 import { compose, last } from 'ramda';
 import { toNumber } from 'lodash';
+import { HOSTS_TO_PREFIX, PREFIX_TO_HOSTS } from './cidrEnum';
 
 /**
  * totalHostsTransformer() - Accepts the number of total host addresses the user has supplied for the VPC they are trying

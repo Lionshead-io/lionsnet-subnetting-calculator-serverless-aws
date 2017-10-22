@@ -12,9 +12,16 @@
  * @param hostsPerVpc int
  * @returns {number}
  */
+import { compose, last } from 'ramda';
+import { toNumber } from 'lodash';
+import { HOSTS_TO_PREFIX, PREFIX_TO_HOSTS } from './cidrEnum';
+
 export default function hostsPerSubnetTransformer(hostsPerSubnet: number, hostsPerVpc: number): number {
   if (hostsPerSubnet < 16) return 16;
   else if (hostsPerSubnet > hostsPerVpc) return hostsPerVpc;
+  else if (hostsPerSubnet % 16 > 0) {
+    return compose(toNumber, last)(Object.keys(HOSTS_TO_PREFIX).filter(currVal => (currVal <= hostsPerSubnet)));
+  }
 
   return (Math.floor(hostsPerSubnet / 16) * 16);
 };
