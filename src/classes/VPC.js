@@ -96,7 +96,6 @@ export default class VPC {
     const generateSubnetsCurried = R.curry(VPC.generateSubnets)(subnetCount)(safeHostsPerSubnet);
     let addVpcMetadata = R.curry(function (netblockCount, lastNetblockUsed, vpc) {
       const firstNetblock = _isNull(lastNetblockUsed);
-      debugger;
 
       return Object.assign({}, vpc, {
         vpcId,
@@ -108,18 +107,18 @@ export default class VPC {
       });
     })(safeTotalHosts / 256);
 
-    /**
-     * After we've retrieved the LAST_NETBLOCK record which contains the 'lastNetblockUsed' we want to add 1 to it & multiply
-     * the by 256. The result refers to the number of host addresses that have already been consumed.
-     */
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // After we've retrieved the LAST_NETBLOCK record which contains the 'lastNetblockUsed' we want to add 1 to it & multiply
+    // the by 256. The result refers to the number of host addresses that have already been consumed.
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     let [lastNetblockUsed, hostAddressesUsed] = await (getNetblockRecordT()
                                 .map(res => res.Item || {})
                                 .map(res => [(res.lastNetblockUsed && (_isNumber(_toNumber(res.lastNetblockUsed.N))) ? _toNumber(res.lastNetblockUsed.N) : null), (res.lastNetblockUsed) ? ( (_toNumber(res.lastNetblockUsed.N) + 1) * 256 ) : 0])
                                 .map(res => R.tap(x => { addVpcMetadata = addVpcMetadata(x[0]) }, res))
                                 .run()
                                 .promise());
-
-    debugger;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -208,6 +207,7 @@ export default class VPC {
     };
 
     /**
+     * neededBlocks() - Returns the number of netblocks needed to provision the number of subnets specified
      *
      * @param totalBlocks
      * @param usedBlocks

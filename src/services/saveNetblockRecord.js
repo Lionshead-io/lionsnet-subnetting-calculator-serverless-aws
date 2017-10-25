@@ -32,16 +32,10 @@ async function updateNetblockRecord(endNetblock: number): Promise {
     ReturnValues: 'UPDATED_NEW',
     UpdateExpression: 'SET #n = :i'
   };
-  let result = await docClient.updateAsync( params );
-
-  console.log(result, 'updateNetblockRecord -> result');
-
-  return (result);
+  return await docClient.updateAsync( params );
 }
 
 async function saveNetblockRecord(record: any): Promise {
-  debugger;
-
   const params = {
     ReturnValues: 'ALL_OLD',
     TableName,

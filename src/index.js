@@ -16,21 +16,7 @@ import { saveVpcT } from './services/saveVpc';
 import defaultWorkspaceValidator from './validators/defaultWorkspace';
 import vpcIdValidator from './validators/vpcId';
 import createResponse from './helpers/createResponse';
-
 import VPC from './classes/VPC';
-
-// let a = new VPC({ DefaultWorkspace: '100.64.0.0/10' });
-//
-// debugger;
-//
-// a.next({ totalHosts: 515, subnetCount: 1, hostsPerSubnet: 64 }).then(res => console.log(res, 'newVpc.then'));
-
-const createResponse = (statusCode, body) => {
-  return {
-    statusCode: statusCode,
-    body: body
-  };
-};
 
 exports.createVpc = (event, context, callback) => {
   const body = JSON.parse(event.body || '{}');
@@ -77,7 +63,9 @@ exports.createVpc = (event, context, callback) => {
       onRejected:  (reason) => callback(null, createResponse(400, reason)),
       onResolved:  (value) => callback(null, createResponse(200, value))
     });
+};
 
+exports.createVpc = (event, context, callback) => {
 
 };
 
