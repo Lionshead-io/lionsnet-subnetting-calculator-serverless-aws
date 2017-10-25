@@ -23,7 +23,7 @@ const dynamodb = new AWS.DynamoDB({
   region: process.env.AWS_REGION || 'us-east-1'
 });
 
-function getNetblockRecord() {
+export default function getNetblockRecord() {
   const params = {
     Key: {
       'vpcId': {
@@ -41,4 +41,4 @@ function getNetblockRecord() {
   });
 }
 
-export default fromPromised(getNetblockRecord);
+export const getNetblockRecordT = fromPromised(getNetblockRecord);

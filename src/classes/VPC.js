@@ -20,7 +20,7 @@ import ip from 'ip';
 import binaryIp from 'binary-ip';
 import numberconvert from 'number-convert';
 import binaryString from 'math-uint32-to-binary-string';
-import getNetblockRecord from '../services/getNetblockRecord';
+import { getNetblockRecordT } from '../services/getNetblockRecord';
 import { HOSTS_TO_PREFIX, PREFIX_TO_HOSTS } from '../helpers/cidrEnum';
 import addBinary from '../helpers/addBinary';
 import totalHostsTransformer from '../helpers/totalHosts.transformer';
@@ -96,8 +96,10 @@ export default class VPC {
     const generateSubnetsCurried = R.curry(VPC.generateSubnets)(subnetCount)(safeHostsPerSubnet);
     let addVpcMetadata = R.curry(function (netblockCount, lastNetblockUsed, vpc) {
       const firstNetblock = _isNull(lastNetblockUsed);
+      debugger;
 
       return Object.assign({}, vpc, {
+        vpcId,
         netblockCount,
         ...(firstNetblock ? { startNetblock: 0 } : { startNetblock: lastNetblockUsed + 1 }),
         ...(firstNetblock ? { endNetblock: (((safeTotalHosts / 256)) - 1) } : { endNetblock: ((lastNetblockUsed + 1) + (safeTotalHosts / 256)) - 1 }),
@@ -110,9 +112,9 @@ export default class VPC {
      * After we've retrieved the LAST_NETBLOCK record which contains the 'lastNetblockUsed' we want to add 1 to it & multiply
      * the by 256. The result refers to the number of host addresses that have already been consumed.
      */
-    let [lastNetblockUsed, hostAddressesUsed] = await (getNetblockRecord()
+    let [lastNetblockUsed, hostAddressesUsed] = await (getNetblockRecordT()
                                 .map(res => res.Item || {})
-                                .map(res => [(_isNumber(res.lastNetblockUsed) ? res.lastNetblockUsed : null), (res.lastNetblockUsed) ? ( (res.lastNetblockUsed + 1) * 256 ) : 0])
+                                .map(res => [(res.lastNetblockUsed && (_isNumber(_toNumber(res.lastNetblockUsed.N))) ? _toNumber(res.lastNetblockUsed.N) : null), (res.lastNetblockUsed) ? ( (_toNumber(res.lastNetblockUsed.N) + 1) * 256 ) : 0])
                                 .map(res => R.tap(x => { addVpcMetadata = addVpcMetadata(x[0]) }, res))
                                 .run()
                                 .promise());
