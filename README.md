@@ -15,6 +15,10 @@
 * [Getting Started](docs/getting-started.md)
 
 
+## Roadmap
+[Lionsnet Trello Board](https://trello.com/b/wK7ZjMqg/lionsnet)
+
+
 ### Get in Touch
 
 * [@realMIglesias](https://twitter.com/realMIglesias)
