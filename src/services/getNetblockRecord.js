@@ -23,22 +23,18 @@ const dynamodb = new AWS.DynamoDB({
   region: process.env.AWS_REGION || 'us-east-1'
 });
 
-export default function getNetblockRecord() {
+const TableName = 'lionsnet-vpc';
+
+export async function getNetblockRecord() {
   const params = {
     Key: {
-      'vpcId': {
-        S: 'LAST_NETBLOCK'
-      }
+      vpcId: 'LAST_NETBLOCK'
     },
-    TableName: 'lionsnet-vpc'
+    TableName
   };
+  const result = await docClient.getAsync(params);
 
-  return new Promise((resolve, reject) => {
-    dynamodb.getItem(params, function(err, data) {
-      if (err) reject(err);
-      else     resolve(data);
-    });
-  });
+  return result.Item;
 }
 
 export const getNetblockRecordT = fromPromised(getNetblockRecord);

@@ -114,8 +114,8 @@ export default class VPC {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     let [lastNetblockUsed, hostAddressesUsed] = await (getNetblockRecordT()
-                                .map(res => res.Item || {})
-                                .map(res => [(res.lastNetblockUsed && (_isNumber(_toNumber(res.lastNetblockUsed.N))) ? _toNumber(res.lastNetblockUsed.N) : null), (res.lastNetblockUsed) ? ( (_toNumber(res.lastNetblockUsed.N) + 1) * 256 ) : 0])
+                                .map(res => res || {})
+                                .map(res => [(res.lastNetblockUsed && (_isNumber(_toNumber(res.lastNetblockUsed))) ? _toNumber(res.lastNetblockUsed) : null), (res.lastNetblockUsed) ? ( (_toNumber(res.lastNetblockUsed) + 1) * 256 ) : 0])
                                 .map(res => R.tap(x => { addVpcMetadata = addVpcMetadata(x[0]) }, res))
                                 .run()
                                 .promise());

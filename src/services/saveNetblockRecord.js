@@ -32,32 +32,19 @@ async function updateNetblockRecord(endNetblock: number): Promise {
     ReturnValues: 'UPDATED_NEW',
     UpdateExpression: 'SET #n = :i'
   };
+
   return await docClient.updateAsync( params );
 }
 
 async function saveNetblockRecord(record: any): Promise {
+  const nextRecord = Object.assign({}, record, { vpcId: 'LAST_NETBLOCK' });
   const params = {
-    ReturnValues: 'ALL_OLD',
     TableName,
-    Item: {
-      'vpcId': {
-        S: 'LAST_NETBLOCK'
-      },
-      'DefaultWorkspace': {
-        S: record.DefaultWorkspace
-      },
-      'lastNetblockUsed': {
-        N: _toString(record.lastNetblockUsed)
-      },
-    }
+    Item: nextRecord
   };
+  const result = await docClient.putAsync(params);
 
-  return await new Promise((resolve, reject) => {
-    dynamodb.putItem(params, function(err, data) {
-      if (err) reject(err);
-      else     resolve(data);
-    });
-  });
+  return result;
 }
 
 export default updateNetblockRecord;

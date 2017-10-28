@@ -7,12 +7,14 @@
 import Result from 'folktale/result';
 import Maybe from 'folktale/maybe';
 import Validation from 'folktale/validation';
-import { fromPromised } from 'folktale/concurrency/task';
+import { of, rejected, fromPromised } from 'folktale/concurrency/task';
 import { isEmpty as _isEmpty } from 'lodash';
-import { task, of, rejected } from 'folktale/concurrency/task';
+import R from 'ramda';
 import { getNetblockRecordT } from './services/getNetblockRecord';
 import { saveNetblockRecordT, updateNetblockRecordT } from './services/saveNetblockRecord';
 import { saveVpcT } from './services/saveVpc';
+import { deleteVpcT } from './services/deleteVpc';
+import { getVpcT } from './services/getVpc';
 import defaultWorkspaceValidator from './validators/defaultWorkspace';
 import vpcIdValidator from './validators/vpcId';
 import createResponse from './helpers/createResponse';
@@ -40,13 +42,13 @@ exports.createVpc = (event, context, callback) => {
   //
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   getNetblockRecordT()
-    .map(res => res.Item || {})
+    .map(res => res || {})
     .chain(res => (_isEmpty(res)) ? rejected('Error! Lionsnet must be configured before you can start provisioning VPCs.') : of(res))
     .chain(lastNetblock => vpcIdValidator(body.vpcId).matchWith({
       Success: () => {
-        const _VPC = new VPC({ DefaultWorkspace: lastNetblock.DefaultWorkspace.S });
+        const _VPC = new VPC({ DefaultWorkspace: lastNetblock.DefaultWorkspace });
 
-        return fromPromised(_VPC.next.bind(_VPC))(Object.assign({}, body, { DefaultWorkspace: lastNetblock.DefaultWorkspace.S }));
+        return fromPromised(_VPC.next.bind(_VPC))(Object.assign({}, body, { DefaultWorkspace: lastNetblock.DefaultWorkspace }));
       },
       Failure: ({ value }) => rejected(value)
     }))
@@ -65,12 +67,42 @@ exports.createVpc = (event, context, callback) => {
     });
 };
 
-exports.createVpc = (event, context, callback) => {
+exports.deleteVpc = (event, context, callback) => {
+  const body = JSON.parse(event.body || '{}');
+
+  vpcIdValidator(body.vpcId).matchWith({
+    Success: () => {
+      let releasedBlocks;
+
+      getVpcT(body.vpcId)
+        .map(vpc => ({ startNetblock: vpc.startNetblock, endNetblock: vpc.endNetblock, usedBlocks: vpc.usedBlocks }))
+        .chain(releasedBlocks =>
+          deleteVpcT(body.vpcId)
+            .chain(_ => getNetblockRecordT())
+            .chain(netblockRecord => {
+              const nextNetblockRecord = Object.assign({}, netblockRecord, {
+                ...(netblockRecord.releasedBlocks) ? { releasedBlocks: netblockRecord.releasedBlocks.concat([releasedBlocks]) } : { releasedBlocks: [releasedBlocks] }
+              });
+
+              return saveNetblockRecordT(nextNetblockRecord);
+            })
+        )
+        .run()
+        .listen({
+          onRejected:  (reason) => callback(null, createResponse(400, reason)),
+          onResolved:  (value) => callback(null, createResponse(200, null))
+        });
+    },
+    Failure: ({ value }) => createResponse(400, value)
+  });
+};
+
+exports.deleteSubnet = (event, context, callback) => {
 
 };
 
 exports.getConfiguration = async (event, context, callback) => {
-  let result = await getNetblockRecordT().map(res => res.Item || {}).run().promise();
+  let result = await getNetblockRecordT().map(res => res || {}).run().promise();
 
   callback(null, createResponse(200, result));
 };
@@ -81,7 +113,7 @@ exports.configure = (event, context, callback) => {
 
   // TODO: Add comments for this block of code.
   getNetblockRecordT()
-    .map(res => res.Item || {})
+    .map(res => res || {})
     .chain(res => (_isEmpty(res)) ? of(res) : rejected('Error! Lionsnet has already been configured and cannot be re-configured'))
     .chain(_ => defaultWorkspaceValidator(body.DefaultWorkspace).matchWith({
       Success: () => saveNetblockRecordT(transformedBody),
@@ -96,4 +128,6 @@ exports.configure = (event, context, callback) => {
 };
 
 // exports.configure({body: JSON.stringify({DefaultWorkspace: '100.64.0.0/10'})}, {}, (err, value) => console.log(value, 'cb'));
-exports.createVpc({body: JSON.stringify({vpcId: 'w-prod', totalHosts: 512})}, {}, (err, value) => console.log(value, 'cb'));
+// exports.getConfiguration({}, {}, (err, value) => console.log(value, 'cb'));
+// exports.createVpc({body: JSON.stringify({vpcId: 'w-prod', totalHosts: 512})}, {}, (err, value) => console.log(value, 'cb'));
+// exports.deleteVpc({body: JSON.stringify({vpcId: 'ritz'})}, {}, (err, value) => console.log(value, 'cb'));
