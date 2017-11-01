@@ -10,11 +10,11 @@ import { HOSTS_TO_PREFIX } from '../helpers/cidrEnum';
  * @param totalHosts - # of IP Addresses that are to be allocated to the VPC
  * @returns {*}
  */
-export default function totalHostsIsNumber(totalHosts: number): Validation {
+export function totalHostsIsNumber(totalHosts: number): Validation {
   return (_isNumber(totalHosts)) ? Validation.Success() : Validation.Failure([`'totalHosts' must be an integer greater than or equal to 256..`]);
 };
 
-export default function totalHostsValidRange(totalHosts: number): Validation {
+export function totalHostsValidRange(totalHosts: number): Validation {
   return (totalHosts >= 256 && totalHosts <= 65536) ? Validation.Success() : Validation.Failure([`'totalHosts' must be an integer greater than or equal to 256 and less than or equal to 65536. AWS VPCs can have a maximum of 65536 host addresses.`]);
 };
 

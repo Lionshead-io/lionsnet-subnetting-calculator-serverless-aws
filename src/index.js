@@ -4,12 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE.txt file in the root directory of this source tree.
  */
-import Result from 'folktale/result';
-import Maybe from 'folktale/maybe';
-import Validation from 'folktale/validation';
 import { of, rejected, fromPromised } from 'folktale/concurrency/task';
-import { isEmpty as _isEmpty } from 'lodash';
-import R from 'ramda';
+import { isEmpty as _isEmpty, isError as _isError, remove as _remove } from 'lodash';
 import { getNetblockRecordT } from './services/getNetblockRecord';
 import { saveNetblockRecordT, updateNetblockRecordT } from './services/saveNetblockRecord';
 import { saveVpcT } from './services/saveVpc';
@@ -17,6 +13,9 @@ import { deleteVpcT } from './services/deleteVpc';
 import { getVpcT } from './services/getVpc';
 import defaultWorkspaceValidator from './validators/defaultWorkspace';
 import vpcIdValidator from './validators/vpcId';
+import subnetCountValidator from './validators/subnetCount';
+import { hostsPerSubnetIsNumber } from './validators/hostsPerSubnet';
+import ipAddressValidator from './validators/ipAddress';
 import createResponse from './helpers/createResponse';
 import VPC from './classes/VPC';
 
@@ -72,9 +71,9 @@ exports.deleteVpc = (event, context, callback) => {
 
   vpcIdValidator(body.vpcId).matchWith({
     Success: () => {
-      let releasedBlocks;
-
       getVpcT(body.vpcId)
+        .map(res => res || {})
+        .chain(res => (_isEmpty(res)) ? rejected('Error! The VPC you are trying to delete does NOT exist.') : of(res))
         .map(vpc => ({ startNetblock: vpc.startNetblock, endNetblock: vpc.endNetblock, usedBlocks: vpc.usedBlocks }))
         .chain(releasedBlocks =>
           deleteVpcT(body.vpcId)
@@ -97,8 +96,66 @@ exports.deleteVpc = (event, context, callback) => {
   });
 };
 
-exports.deleteSubnet = (event, context, callback) => {
+exports.createSubnet = (event, context, callback) => {
+  const body = JSON.parse(event.body || '{}');
 
+  vpcIdValidator(body.vpcId)
+    .concat(subnetCountValidator(body.subnetCount))
+    .concat(hostsPerSubnetIsNumber(body.hostsPerSubnet))
+    .matchWith({
+      Success: () => {
+        getVpcT(body.vpcId)
+          .chain(vpc =>
+            getNetblockRecordT()
+              .map(res => res || {})
+              .chain(res => (_isEmpty(res)) ? rejected('Error! Lionsnet must be configured before you can start provisioning VPCs.') : of(res))
+              .map(res => ({ DefaultWorkspace: res.DefaultWorkspace }))
+              .chain(lastNetblock => {
+                const result = VPC.generateSubnets(body.subnetCount, body.hostsPerSubnet, vpc);
+
+                return (_isError(result)) ? rejected(result) : of(result.getOrElse(rejected('Error! The subnets were not provisioned. Please try again.')));
+              })
+              .chain(newVpc => saveVpcT(newVpc))
+          )
+          .run()
+          .listen({
+            onRejected:  (reason) => callback(null, createResponse(400, reason)),
+            onResolved:  (value) => callback(null, createResponse(200, value))
+          });
+      },
+      Failure: ({ value }) => callback(null, createResponse(400, value))
+    });
+};
+
+exports.deleteSubnet = (event, context, callback) => {
+  const pathParameters = JSON.parse(event.pathParameters || '{}');
+  const vpcId = pathParameters.vpcId;
+  const subnetNetworkAddress = pathParameters.subnetNetworkAddress;
+
+  vpcIdValidator(vpcId)
+    .concat(ipAddressValidator(subnetNetworkAddress))
+    .matchWith({
+      Success: () => {
+        console.log(subnetNetworkAddress, 'deleteSubnet -> Success -> networkAddress');
+        getVpcT(vpcId)
+          .map(res => res || {})
+          .chain(res => (_isEmpty(res)) ? rejected('Error! The VPC you are trying to modify does NOT exist.') : of(res))
+          .map(vpc => {
+            if (vpc.subnets.length) {
+              _remove(vpc.subnets, (currVal) => currVal.networkAddress === subnetNetworkAddress)
+            }
+
+            return vpc;
+          })
+          .chain(newVpc => saveVpcT(newVpc))
+          .run()
+          .listen({
+            onRejected:  (reason) => callback(null, createResponse(400, reason)),
+            onResolved:  (value) => callback(null, createResponse(200, value))
+          });
+      },
+      Failure: ({ value }) => callback(null, createResponse(400, value))
+    });
 };
 
 exports.getConfiguration = async (event, context, callback) => {
@@ -130,4 +187,6 @@ exports.configure = (event, context, callback) => {
 // exports.configure({body: JSON.stringify({DefaultWorkspace: '100.64.0.0/10'})}, {}, (err, value) => console.log(value, 'cb'));
 // exports.getConfiguration({}, {}, (err, value) => console.log(value, 'cb'));
 // exports.createVpc({body: JSON.stringify({vpcId: 'w-prod', totalHosts: 512})}, {}, (err, value) => console.log(value, 'cb'));
-// exports.deleteVpc({body: JSON.stringify({vpcId: 'ritz'})}, {}, (err, value) => console.log(value, 'cb'));
+exports.deleteVpc({body: JSON.stringify({vpcId: 'w-prod'})}, {}, (err, value) => console.log(value, 'cb'));
+// exports.createSubnet({body: JSON.stringify({vpcId: 'w-prod', subnetCount: 2, hostsPerSubnet: 64})}, {}, (err, value) => console.log(err, value, 'cb'));
+// exports.deleteSubnet({pathParameters: JSON.stringify({vpcId: 'w-prod', subnetNetworkAddress: '100.64.1.192'})}, {}, (err, value) => console.log(err, value, 'cb'));

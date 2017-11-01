@@ -145,19 +145,25 @@ export default class VPC {
    * @returns {Nothing, Just}
    */
   static generateSubnets(subnetCount, hostsPerSubnet, vpc) {
-    const safeHostsPerSubnet = (function ({ subnetCount = 4, hostsPerSubnet = 64, totalHosts = 256 } = {}) {
-      if (hostsPerSubnet <= 0) return Maybe.Nothing();
-      else if (hostsPerSubnet * subnetCount === totalHosts) return Maybe.Just(hostsPerSubnet);
+    // const safeHostsPerSubnet = (function ({ subnetCount = 4, hostsPerSubnet = 64, totalHosts = 256 } = {}) {
+    //   if (hostsPerSubnet <= 0) return Maybe.Nothing();
+    //   else if (hostsPerSubnet * subnetCount === totalHosts) return Maybe.Just(hostsPerSubnet);
+    //
+    //   debugger;
+    //
+    //   return Maybe.Just(
+    //     // $FlowDisableLine
+    //     R.compose(_toNumber, R.last)(
+    //       Object.keys(HOSTS_TO_PREFIX).filter((currVal) => {
+    //         return (subnetCount * currVal <= vpc.length)
+    //       })
+    //     )
+    //   );
+    // }({ subnetCount, hostsPerSubnet, totalHosts: vpc.length }));
 
-      return Maybe.Just(
-        // $FlowDisableLine
-        R.compose(_toNumber, R.last)(
-          Object.keys(HOSTS_TO_PREFIX).filter((currVal) => {
-            return (subnetCount * currVal <= vpc.length)
-          })
-        )
-      );
-    }({ subnetCount, hostsPerSubnet, totalHosts: vpc.length }));
+    const safeHostsPerSubnet = hostsPerSubnetTransformer(hostsPerSubnet, vpc.length);
+
+    debugger;
 
     /**
      * totalBlocks() - Returns the number of Subnet Netblocks available by dividing the total number of host addresses
@@ -217,7 +223,7 @@ export default class VPC {
      * @returns {Just, Nothing}
      */
     const neededBlocks = function ({ totalBlocks, usedBlocks, remainingBlocks }, subnetCount, safeHostsPerSubnet) {
-      const result = ((safeHostsPerSubnet.getOrElse(16) * subnetCount) / 16);
+      const result = ((safeHostsPerSubnet * subnetCount) / 16);
 
       if (result <= remainingBlocks) {
         return Maybe.Just({ neededBlocks: result });
@@ -235,6 +241,7 @@ export default class VPC {
     //                      We iterate over each subnet in the VPC.
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     return Result.fromMaybe(
       Maybe.Just()
         .chain(_ => totalBlocks(vpc))
@@ -248,7 +255,7 @@ export default class VPC {
         function buildSubnets (pendingSubnets, nextBlock, hostsPerSubnet, vpc) {
           if (pendingSubnets <= 0) return vpc;
 
-          const nextBlockBinary = binaryString((nextBlock + 1) * 16);
+          const nextBlockBinary = binaryString((nextBlock) * 16);
           const nextSubnetAddress = addBinary(nextBlockBinary, binaryIp(vpc.networkAddress).split('.').join(''));
 
           const addSubnetMetadata = (subnet) => {
@@ -268,11 +275,11 @@ export default class VPC {
             vpc.subnets = [newSubnet]
           }
 
-          return buildSubnets((pendingSubnets - 1), ((nextBlock + (hostsPerSubnet / 16)) - 1), hostsPerSubnet, vpc);
+          return buildSubnets((pendingSubnets - 1), ((nextBlock + (hostsPerSubnet / 16))), hostsPerSubnet, vpc);
         }
 
         return Result.Ok(buildSubnets(subnetCount, blockInfo.usedBlocks, hostsPerSubnet, vpc));
       })
-      .orElse(() => new Error('error msg.'));
+      .orElse(err => new Error('Subnets were not generated. Please try again.'));
   }
 }
