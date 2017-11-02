@@ -36,10 +36,10 @@ Resources:
             Path: /configuration
             Method: post
 
-  PutFunction:
+  PostVpcFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.put
+      Handler: index.createVpc
       Runtime: nodejs6.10
       CodeUri: s3://lionsnet/dist.zip
       Policies: AmazonDynamoDBFullAccess
@@ -50,13 +50,13 @@ Resources:
         PutResource:
           Type: Api
           Properties:
-            Path: /resource/{resourceId}
-            Method: put
+            Path: /vpc
+            Method: post
 
-  DeleteFunction:
+  DeleteVpcFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.delete
+      Handler: index.deleteVpc
       Runtime: nodejs6.10
       CodeUri: s3://lionsnet/dist.zip
       Policies: AmazonDynamoDBFullAccess
@@ -67,7 +67,7 @@ Resources:
         DeleteResource:
           Type: Api
           Properties:
-            Path: /resource/{resourceId}
+            Path: /vpc/{vpcId}
             Method: delete
 
   Table:

@@ -9,7 +9,7 @@
 const createResponse = (statusCode: number, body: any): { statusCode: number, body: any } => {
   return {
     statusCode: statusCode,
-    body: body
+    body: JSON.stringify(body)
   };
 };
 
