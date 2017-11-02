@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Lionsnet - A VPC provisioning and subnetting calculator powered by AWS Lambda and DynamoDB.
+Resources:
+  GetConfigurationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.getConfiguration
+      Runtime: nodejs6.10
+      CodeUri: s3://lionsnet/dist.zip
+      Policies: AmazonDynamoDBReadOnlyAccess
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /configuration
+            Method: get
+
+  PostConfigurationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.configure
+      Runtime: nodejs6.10
+      CodeUri: s3://lionsnet/dist.zip
+      Policies: AmazonDynamoDBFullAccess
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Events:
+        PutResource:
+          Type: Api
+          Properties:
+            Path: /configuration
+            Method: post
+
+  PutFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.put
+      Runtime: nodejs6.10
+      CodeUri: s3://lionsnet/dist.zip
+      Policies: AmazonDynamoDBFullAccess
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Events:
+        PutResource:
+          Type: Api
+          Properties:
+            Path: /resource/{resourceId}
+            Method: put
+
+  DeleteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.delete
+      Runtime: nodejs6.10
+      CodeUri: s3://lionsnet/dist.zip
+      Policies: AmazonDynamoDBFullAccess
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Events:
+        DeleteResource:
+          Type: Api
+          Properties:
+            Path: /resource/{resourceId}
+            Method: delete
+
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "vpcId"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "vpcId"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      TableName: 'lionsnet-vpc'
+      Tags:
+        - Key: Project
+          Value: lionsnet
+        - Key: Organization
+          Value: Lionshead
