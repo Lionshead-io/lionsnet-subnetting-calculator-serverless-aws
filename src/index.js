@@ -117,13 +117,15 @@ exports.deleteVpc = (event, context, callback) => {
 
 exports.createSubnet = (event, context, callback) => {
   const body = JSON.parse(event.body || '{}');
+  const pathParameters = JSON.parse(event.pathParameters || '{}');
+  const vpcId = pathParameters.vpcId;
 
-  vpcIdValidator(body.vpcId)
+  vpcIdValidator(vpcId)
     .concat(subnetCountValidator(body.subnetCount))
     .concat(hostsPerSubnetIsNumber(body.hostsPerSubnet))
     .matchWith({
       Success: () => {
-        getVpcT(body.vpcId)
+        getVpcT(vpcId)
           .chain(vpc =>
             getNetblockRecordT()
               .map(res => res || {})
@@ -207,6 +209,6 @@ exports.configure = (event, context, callback) => {
 // exports.getConfiguration({}, {}, (err, value) => console.log(value, 'cb'));
 // exports.createVpc({body: JSON.stringify({vpcId: 'w-prod', totalHosts: 512})}, {}, (err, value) => console.log(value, 'cb'));
 // exports.deleteVpc({body: JSON.stringify({vpcId: 'w-prod'})}, {}, (err, value) => console.log(value, 'cb'));
-// exports.createSubnet({body: JSON.stringify({vpcId: 'w-prod', subnetCount: 2, hostsPerSubnet: 64})}, {}, (err, value) => console.log(err, value, 'cb'));
+exports.createSubnet({pathParameters: JSON.stringify({vpcId: 'w-prod'}), body: JSON.stringify({vpcId: 'w-prod', subnetCount: 2, hostsPerSubnet: 64})}, {}, (err, value) => console.log(err, value, 'cb'));
 // exports.deleteSubnet({pathParameters: JSON.stringify({vpcId: 'w-prod', subnetNetworkAddress: '100.64.1.192'})}, {}, (err, value) => console.log(err, value, 'cb'));
 // exports.getVpc({pathParameters: JSON.stringify({vpcId: 'w-prod'})}, {}, (err, value) => console.log(err, value, 'cb'));
