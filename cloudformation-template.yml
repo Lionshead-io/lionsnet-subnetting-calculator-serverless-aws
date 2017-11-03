@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Lionsnet - A VPC provisioning and subnetting calculator powered by AWS Lambda and DynamoDB.
 Resources:
-  GetConfigurationFunction:
+  GetConfigurationFn:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.getConfiguration
@@ -19,7 +19,7 @@ Resources:
             Path: /configuration
             Method: get
 
-  PostConfigurationFunction:
+  PostConfigurationFn:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.configure
@@ -36,7 +36,24 @@ Resources:
             Path: /configuration
             Method: post
 
-  PostVpcFunction:
+  GetVpcFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.getVpc
+      Runtime: nodejs6.10
+      CodeUri: s3://lionsnet/dist.zip
+      Policies: AmazonDynamoDBReadOnlyAccess
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Events:
+        PutResource:
+          Type: Api
+          Properties:
+            Path: /vpc/{vpcId}
+            Method: get
+
+  PostVpcFn:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.createVpc
@@ -53,7 +70,7 @@ Resources:
             Path: /vpc
             Method: post
 
-  DeleteVpcFunction:
+  DeleteVpcFn:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.deleteVpc
@@ -68,6 +85,40 @@ Resources:
           Type: Api
           Properties:
             Path: /vpc/{vpcId}
+            Method: delete
+
+  CreateSubnetFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.createSubnet
+      Runtime: nodejs6.10
+      CodeUri: s3://lionsnet/dist.zip
+      Policies: AmazonDynamoDBFullAccess
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Events:
+        DeleteResource:
+          Type: Api
+          Properties:
+            Path: /vpc/{vpcId}/subnet
+            Method: post
+
+  DeleteSubnetFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.deleteSubnet
+      Runtime: nodejs6.10
+      CodeUri: s3://lionsnet/dist.zip
+      Policies: AmazonDynamoDBFullAccess
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+      Events:
+        DeleteResource:
+          Type: Api
+          Properties:
+            Path: /vpc/{vpcId}/subnet/{subnetNetworkAddress}
             Method: delete
 
   Table:

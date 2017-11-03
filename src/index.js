@@ -19,6 +19,25 @@ import ipAddressValidator from './validators/ipAddress';
 import createResponse from './helpers/createResponse';
 import VPC from './classes/VPC';
 
+exports.getVpc = (event, context, callback) => {
+  const pathParameters = JSON.parse(event.pathParameters || '{}');
+  const vpcId = pathParameters.vpcId;
+
+  vpcIdValidator(vpcId).matchWith({
+    Success: () => {
+      getVpcT(vpcId)
+        .map(res => res || {})
+        .chain(res => (_isEmpty(res)) ? rejected('Error! The VPC you are trying to delete does NOT exist.') : of(res))
+        .run()
+        .listen({
+          onRejected:  (reason) => callback(null, createResponse(400, reason)),
+          onResolved:  (value) => callback(null, createResponse(200, value))
+        });
+    },
+    Failure: ({ value }) => createResponse(400, value)
+  });
+};
+
 exports.createVpc = (event, context, callback) => {
   const body = JSON.parse(event.body || '{}');
 
@@ -190,3 +209,4 @@ exports.configure = (event, context, callback) => {
 // exports.deleteVpc({body: JSON.stringify({vpcId: 'w-prod'})}, {}, (err, value) => console.log(value, 'cb'));
 // exports.createSubnet({body: JSON.stringify({vpcId: 'w-prod', subnetCount: 2, hostsPerSubnet: 64})}, {}, (err, value) => console.log(err, value, 'cb'));
 // exports.deleteSubnet({pathParameters: JSON.stringify({vpcId: 'w-prod', subnetNetworkAddress: '100.64.1.192'})}, {}, (err, value) => console.log(err, value, 'cb'));
+// exports.getVpc({pathParameters: JSON.stringify({vpcId: 'w-prod'})}, {}, (err, value) => console.log(err, value, 'cb'));
