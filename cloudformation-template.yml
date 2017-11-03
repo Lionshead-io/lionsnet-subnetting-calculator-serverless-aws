@@ -53,7 +53,7 @@ Resources:
             Path: /vpc/{vpcId}
             Method: get
 
-  PostVpcFn:
+  CreateVpcFn:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.createVpc
