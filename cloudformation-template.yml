@@ -5,24 +5,7 @@ Resources:
   GetConfigurationFn:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.getConfiguration
-      Runtime: nodejs6.10
-      CodeUri: s3://lionsnet/dist.zip
-      Policies: AmazonDynamoDBReadOnlyAccess
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref Table
-      Events:
-        GetResource:
-          Type: Api
-          Properties:
-            Path: /configuration
-            Method: get
-
-  PostConfigurationFn:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.configure
+      Handler: index.main
       Runtime: nodejs6.10
       CodeUri: s3://lionsnet/dist.zip
       Policies: AmazonDynamoDBFullAccess
@@ -30,96 +13,144 @@ Resources:
         Variables:
           TABLE_NAME: !Ref Table
       Events:
-        PutResource:
+        GetConfigResource:
+          Type: Api
+          Properties:
+            Path: /configuration
+            Method: get
+        PostConfigResource:
           Type: Api
           Properties:
             Path: /configuration
             Method: post
-
-  GetVpcFn:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.getVpc
-      Runtime: nodejs6.10
-      CodeUri: s3://lionsnet/dist.zip
-      Policies: AmazonDynamoDBReadOnlyAccess
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref Table
-      Events:
-        PutResource:
-          Type: Api
-          Properties:
-            Path: /vpc/{vpcId}
-            Method: get
-
-  CreateVpcFn:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.createVpc
-      Runtime: nodejs6.10
-      CodeUri: s3://lionsnet/dist.zip
-      Policies: AmazonDynamoDBFullAccess
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref Table
-      Events:
-        PutResource:
+        PostVpcResource:
           Type: Api
           Properties:
             Path: /vpc
             Method: post
-
-  DeleteVpcFn:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.deleteVpc
-      Runtime: nodejs6.10
-      CodeUri: s3://lionsnet/dist.zip
-      Policies: AmazonDynamoDBFullAccess
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref Table
-      Events:
-        DeleteResource:
+        GetVpcResource:
+          Type: Api
+          Properties:
+            Path: /vpc/{vpcId}
+            Method: get
+        DeleteVpcResource:
           Type: Api
           Properties:
             Path: /vpc/{vpcId}
             Method: delete
-
-  CreateSubnetFn:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.createSubnet
-      Runtime: nodejs6.10
-      CodeUri: s3://lionsnet/dist.zip
-      Policies: AmazonDynamoDBFullAccess
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref Table
-      Events:
-        DeleteResource:
+        PostVpcSubnetResource:
           Type: Api
           Properties:
             Path: /vpc/{vpcId}/subnet
             Method: post
-
-  DeleteSubnetFn:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.deleteSubnet
-      Runtime: nodejs6.10
-      CodeUri: s3://lionsnet/dist.zip
-      Policies: AmazonDynamoDBFullAccess
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref Table
-      Events:
-        DeleteResource:
+        DeleteVpcSubnetResource:
           Type: Api
           Properties:
             Path: /vpc/{vpcId}/subnet/{subnetNetworkAddress}
             Method: delete
+
+
+#  PostConfigurationFn:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      Handler: index.configure
+#      Runtime: nodejs6.10
+#      CodeUri: s3://lionsnet/dist.zip
+#      Policies: AmazonDynamoDBFullAccess
+#      Environment:
+#        Variables:
+#          TABLE_NAME: !Ref Table
+#      Events:
+#        PutResource:
+#          Type: Api
+#          Properties:
+#            Path: /configuration
+#            Method: post
+#
+#  GetVpcFn:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      Handler: index.getVpc
+#      Runtime: nodejs6.10
+#      CodeUri: s3://lionsnet/dist.zip
+#      Policies: AmazonDynamoDBReadOnlyAccess
+#      Environment:
+#        Variables:
+#          TABLE_NAME: !Ref Table
+#      Events:
+#        PutResource:
+#          Type: Api
+#          Properties:
+#            Path: /vpc/{vpcId}
+#            Method: get
+#
+#  CreateVpcFn:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      Handler: index.createVpc
+#      Runtime: nodejs6.10
+#      CodeUri: s3://lionsnet/dist.zip
+#      Policies: AmazonDynamoDBFullAccess
+#      Environment:
+#        Variables:
+#          TABLE_NAME: !Ref Table
+#      Events:
+#        PutResource:
+#          Type: Api
+#          Properties:
+#            Path: /vpc
+#            Method: post
+#
+#  DeleteVpcFn:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      Handler: index.deleteVpc
+#      Runtime: nodejs6.10
+#      CodeUri: s3://lionsnet/dist.zip
+#      Policies: AmazonDynamoDBFullAccess
+#      Environment:
+#        Variables:
+#          TABLE_NAME: !Ref Table
+#      Events:
+#        DeleteResource:
+#          Type: Api
+#          Properties:
+#            Path: /vpc/{vpcId}
+#            Method: delete
+#
+#  CreateSubnetFn:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      Handler: index.createSubnet
+#      Runtime: nodejs6.10
+#      CodeUri: s3://lionsnet/dist.zip
+#      Policies: AmazonDynamoDBFullAccess
+#      Environment:
+#        Variables:
+#          TABLE_NAME: !Ref Table
+#      Events:
+#        DeleteResource:
+#          Type: Api
+#          Properties:
+#            Path: /vpc/{vpcId}/subnet
+#            Method: post
+#
+#  DeleteSubnetFn:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      Handler: index.deleteSubnet
+#      Runtime: nodejs6.10
+#      CodeUri: s3://lionsnet/dist.zip
+#      Policies: AmazonDynamoDBFullAccess
+#      Environment:
+#        Variables:
+#          TABLE_NAME: !Ref Table
+#      Events:
+#        DeleteResource:
+#          Type: Api
+#          Properties:
+#            Path: /vpc/{vpcId}/subnet/{subnetNetworkAddress}
+#            Method: delete
 
   Table:
     Type: AWS::DynamoDB::Table

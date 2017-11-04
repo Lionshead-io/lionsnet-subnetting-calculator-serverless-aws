@@ -205,10 +205,41 @@ exports.configure = (event, context, callback) => {
     })
 };
 
+exports.main = (event, context, callback) => {
+  // REST -> /configuration
+  if( event.resource == '/configuration' && event.httpMethod == 'GET' ) {
+    exports.getConfiguration(event, context, callback);
+  } else if( event.resource == '/configuration' && event.httpMethod == 'POST' ) {
+    exports.configure(event, context, callback);
+  }
+
+  // REST -> /vpc
+  if( event.resource == '/vpc' && event.httpMethod == 'POST' ) {
+    exports.createVpc(event, context, callback);
+  }
+
+  // REST -> /vpc/{vpcId}
+  if( event.resource == '/vpc/{vpcId}' && event.httpMethod == 'GET' ) {
+    exports.getVpc(event, context, callback);
+  } else if ( event.resource == '/vpc/{vpcId}' && event.httpMethod == 'DELETE' ) {
+    exports.deleteVpc(event, context, callback);
+  }
+
+  // REST -> /vpc/{vpcId}/subnet
+  if( event.resource == '/vpc/{vpcId}/subnet' && event.httpMethod == 'POST' ) {
+    exports.createSubnet(event, context, callback);
+  }
+
+  // REST -> /vpc/{vpcId}/subnet/{subnetNetworkAddress}
+  if( event.resource == '/vpc/{vpcId}/subnet' && event.httpMethod == 'POST' ) {
+    exports.deleteSubnet(event, context, callback);
+  }
+};
+
 // exports.configure({body: JSON.stringify({DefaultWorkspace: '100.64.0.0/10'})}, {}, (err, value) => console.log(value, 'cb'));
 // exports.getConfiguration({}, {}, (err, value) => console.log(value, 'cb'));
 // exports.createVpc({body: JSON.stringify({vpcId: 'w-prod', totalHosts: 512})}, {}, (err, value) => console.log(value, 'cb'));
 // exports.deleteVpc({body: JSON.stringify({vpcId: 'w-prod'})}, {}, (err, value) => console.log(value, 'cb'));
-exports.createSubnet({pathParameters: JSON.stringify({vpcId: 'w-prod'}), body: JSON.stringify({vpcId: 'w-prod', subnetCount: 2, hostsPerSubnet: 64})}, {}, (err, value) => console.log(err, value, 'cb'));
+// exports.createSubnet({pathParameters: JSON.stringify({vpcId: 'w-prod'}), body: JSON.stringify({vpcId: 'w-prod', subnetCount: 2, hostsPerSubnet: 64})}, {}, (err, value) => console.log(err, value, 'cb'));
 // exports.deleteSubnet({pathParameters: JSON.stringify({vpcId: 'w-prod', subnetNetworkAddress: '100.64.1.192'})}, {}, (err, value) => console.log(err, value, 'cb'));
 // exports.getVpc({pathParameters: JSON.stringify({vpcId: 'w-prod'})}, {}, (err, value) => console.log(err, value, 'cb'));
