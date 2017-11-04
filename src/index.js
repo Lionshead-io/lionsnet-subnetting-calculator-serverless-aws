@@ -20,7 +20,7 @@ import createResponse from './helpers/createResponse';
 import VPC from './classes/VPC';
 
 exports.getVpc = (event, context, callback) => {
-  const pathParameters = JSON.parse(event.pathParameters || '{}');
+  const pathParameters = event.pathParameters;
   const vpcId = pathParameters.vpcId;
 
   vpcIdValidator(vpcId).matchWith({
