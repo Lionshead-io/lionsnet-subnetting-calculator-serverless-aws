@@ -232,7 +232,7 @@ exports.main = (event, context, callback) => {
   }
 
   // REST -> /vpc/{vpcId}/subnet/{subnetNetworkAddress}
-  if( event.resource == '/vpc/{vpcId}/subnet' && event.httpMethod == 'POST' ) {
+  if( event.resource == '/vpc/{vpcId}/subnet' && event.httpMethod == 'DELETE' ) {
     exports.deleteSubnet(event, context, callback);
   }
 };
