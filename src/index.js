@@ -86,16 +86,17 @@ exports.createVpc = (event, context, callback) => {
 };
 
 exports.deleteVpc = (event, context, callback) => {
-  const body = JSON.parse(event.body || '{}');
+  const pathParameters = event.pathParameters;
+  const vpcId = pathParameters.vpcId;
 
-  vpcIdValidator(body.vpcId).matchWith({
+  vpcIdValidator(vpcId).matchWith({
     Success: () => {
-      getVpcT(body.vpcId)
+      getVpcT(vpcId)
         .map(res => res || {})
         .chain(res => (_isEmpty(res)) ? rejected('Error! The VPC you are trying to delete does NOT exist.') : of(res))
         .map(vpc => ({ startNetblock: vpc.startNetblock, endNetblock: vpc.endNetblock, usedBlocks: vpc.usedBlocks }))
         .chain(releasedBlocks =>
-          deleteVpcT(body.vpcId)
+          deleteVpcT(vpcId)
             .chain(_ => getNetblockRecordT())
             .chain(netblockRecord => {
               const nextNetblockRecord = Object.assign({}, netblockRecord, {
@@ -117,7 +118,7 @@ exports.deleteVpc = (event, context, callback) => {
 
 exports.createSubnet = (event, context, callback) => {
   const body = JSON.parse(event.body || '{}');
-  const pathParameters = JSON.parse(event.pathParameters || '{}');
+  const pathParameters = event.pathParameters;
   const vpcId = pathParameters.vpcId;
 
   vpcIdValidator(vpcId)
@@ -149,7 +150,7 @@ exports.createSubnet = (event, context, callback) => {
 };
 
 exports.deleteSubnet = (event, context, callback) => {
-  const pathParameters = JSON.parse(event.pathParameters || '{}');
+  const pathParameters = event.pathParameters;
   const vpcId = pathParameters.vpcId;
   const subnetNetworkAddress = pathParameters.subnetNetworkAddress;
 
