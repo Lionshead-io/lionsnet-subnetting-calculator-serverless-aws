@@ -15,7 +15,7 @@ import Result from 'folktale/result';
 import Maybe from 'folktale/maybe';
 import Validation from 'folktale/validation';
 import R from 'ramda';
-import { mixin as _mixin, isUndefined as _isUndefined, isNumber as _isNumber, toNumber as _toNumber, isNull as _isNull } from 'lodash';
+import { mixin as _mixin, isUndefined as _isUndefined, isNumber as _isNumber, toNumber as _toNumber, isNull as _isNull, isInteger as _isInteger } from 'lodash';
 import ip from 'ip';
 import binaryIp from 'binary-ip';
 import numberconvert from 'number-convert';
@@ -82,6 +82,10 @@ export default class VPC {
    */
   // $FlowDisableLine
   async next ({ vpcId, totalHosts = 256, subnetCount = 4, hostsPerSubnet = 64 } = {}) {
+    // TODO: finish parameter validation.
+    // Make sure that totalHosts, subnetCount, & hostsPerSubnet are all valid integers, if not return a rejected Promise.
+    if (!_isInteger(totalHosts)|| !_isInteger(subnetCount) || !_isInteger(hostsPerSubnet)) return Promise.reject('totalHosts, subnetCount, & hostsPerSubnet must all be valid integers');
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // safeTotalHosts & safeHostsPerSubnet will contain 'SAFE' values that correspond to a CIDR prefix.

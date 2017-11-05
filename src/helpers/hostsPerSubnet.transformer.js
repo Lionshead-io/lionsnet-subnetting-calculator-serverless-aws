@@ -1,6 +1,6 @@
 // @flow
 /**
- * hostsPerSubnetTransformer() - Accepts the number of hostsPerSubnet & totoal hostsPerVpc the user has supplied for the VPC they are trying
+ * hostsPerSubnetTransformer() - Accepts the number of hostsPerSubnet & total hostsPerVpc the user has supplied for the VPC they are trying
  *                           to provision and will return a safe hostsPerSubnet value. What this means is that if a user doesn't
  *                           supply a valid hostsPerSubnet integer that corresponds to a valid CIDR prefix, it will round down the
  *                           hostsPerSubnet value to the next available valid CIDR prefix. Note that the minimum number of
