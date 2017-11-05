@@ -21,7 +21,7 @@ const dynamodb = new AWS.DynamoDB({
 
 const TableName = 'lionsnet-vpc';
 
-async function updateNetblockRecord(endNetblock: number): Promise {
+async function updateNetblockRecord(endNetblock: number): Promise<any> {
   const params = {
     Key: {
       vpcId : 'LAST_NETBLOCK'
@@ -36,7 +36,7 @@ async function updateNetblockRecord(endNetblock: number): Promise {
   return await docClient.updateAsync( params );
 }
 
-async function saveNetblockRecord(record: any): Promise {
+async function saveNetblockRecord(record: any): Promise<any> {
   const nextRecord = Object.assign({}, record, { vpcId: 'LAST_NETBLOCK' });
   const params = {
     TableName,

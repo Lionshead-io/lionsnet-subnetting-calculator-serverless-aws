@@ -20,8 +20,7 @@ const dynamodb = new AWS.DynamoDB({
 
 const TableName = 'lionsnet-vpc';
 
-// TODO: Check if vpcId exists before saving...
-async function saveVpc(vpc: any): Promise {
+async function saveVpc(vpc: any): Promise<any> {
   await docClient.putAsync({
     TableName,
     Item: vpc

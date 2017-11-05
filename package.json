@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "lionsnet",
   "version": "0.0.0",
   "description": "A Serverless subnetting calculator powered by AWS Lambda & DynamoDB.",
@@ -76,7 +75,7 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "build": "node tools/build",
     "prepublish": "npm run build",
-    "publish:docs": "easystatic deploy docs --repo kriasoft/babel-starter-kit",
+    "publish:docs": "easystatic deploy docs --repo Lionshead-io/lionsnet-subnetting-calculator-serverless-aws",
     "start": "easystatic start docs"
   }
 }

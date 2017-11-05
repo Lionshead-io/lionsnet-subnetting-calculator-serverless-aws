@@ -1,12 +1,29 @@
 ---
-id: bsk:getting-started
-title: Getting Started ∙ Babel Starter Kit
+id: lionsnet:getting-started
+title: Getting Started ∙ Lionsnet - A Serverless VPC + Subnetting calculator powered by AWS Lambda & DynamoDB.
 ---
 
 # Getting Started
 
-For better experience, make sure that you have `npm v3+` installed. Start by cloning this repo and
-installing project dependencies:
+1. Create CloudFormation Stack using the provided template (cloudformation-template.yaml)
+2. Make a HTTP POST request to /configuration before you start creating VPCs
+3. Create as many VPCs & Subnets as you want
+
+#### Configuring Lionsnet:
+
+POST: <API_GATEWAY_URL>/configuration
+
+```json
+{
+  "DefaultWorkspace": "100.64.0.0/10"
+}
+```
+
+
+|    Properties    |                                                        Description                                                        | Required |
+|:----------------:|:-------------------------------------------------------------------------------------------------------------------------:|:--------:|
+| DefaultWorkspace | An IPV4 global address the with a valid CIDR prefix which will be used to sequentially generate VPCs. Ex. "100.64.0.0/10" |    yes   |
+    
 
 ```sh
 $ git clone -o babel-starter-kit \
@@ -14,44 +31,5 @@ $ git clone -o babel-starter-kit \
       https://github.com/kriasoft/babel-starter-kit.git \
       <your-project-name>
 $ cd <your-project-name>
-$ npm install
-```
-
-Update your name in `LICENSE.txt` and project information in `package.json` and `README.md` files.
-Write your code in `src` folder, write tests in `test` folder. Run `npm run build` to compile the
-source code into a distributable format. Write documentation in markdown format in `docs` folder.
-Run `npm start` to launch a development server with the documentation site.
-
-Alternatively, start a new project with **Yeoman**:
-
-```sh
-$ npm install -g generator-javascript
-$ mkdir <your-project-name>
-$ cd <your-project-name>
-$ yo javascript
-```
-
-### How to Build
-
-Running `npm run build` will compile source files to a distributable format (CommonJS, ES6 and UMD)
-ready to be published to NPM from the `dist` folder. See `tools/build.js` for more info.
-
-### How to Test
-
-Run one, or a combination of the following commands to lint and test your code:
-
-* `npm run lint`       — lint the source code with ESLint
-* `npm test`           — run unit tests with Mocha
-* `npm run test:watch` — run unit tests with Mocha, and watch files for changes
-* `npm run test:cover` — run unit tests with code coverage by Istanbul
-
-### How to Update
-
-Down the road you can fetch and merge the recent changes from this repo back into your project:
-
-```sh
-$ git checkout master
-$ git fetch babel-starter-kit
-$ git merge babel-starter-kit/master
 $ npm install
 ```

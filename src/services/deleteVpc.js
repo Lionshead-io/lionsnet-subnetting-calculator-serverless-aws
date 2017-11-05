@@ -24,7 +24,7 @@ const dynamodb = new AWS.DynamoDB({
 
 const TableName = 'lionsnet-vpc';
 
-export default function deleteVpc(vpcId: string): Promise {
+export default function deleteVpc(vpcId: string): Promise<any> {
   const params = {
     Key: {
       "vpcId": {

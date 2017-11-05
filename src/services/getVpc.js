@@ -20,7 +20,7 @@ const dynamodb = new AWS.DynamoDB({
 
 const TableName = 'lionsnet-vpc';
 
-async function getVpc(vpcId: string): Promise {
+async function getVpc(vpcId: string): Promise<any> {
   const result = await docClient.getAsync({
     TableName,
     Key : {
