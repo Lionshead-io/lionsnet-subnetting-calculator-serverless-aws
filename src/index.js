@@ -27,14 +27,14 @@ exports.getVpc = (event, context, callback) => {
     Success: () => {
       getVpcT(vpcId)
         .map(res => res || {})
-        .chain(res => (_isEmpty(res)) ? rejected('Error! The VPC you are trying to delete does NOT exist.') : of(res))
+        .chain(res => (_isEmpty(res)) ? rejected('Error! The VPC you are trying to fetch does NOT exist.') : of(res))
         .run()
         .listen({
           onRejected:  (reason) => callback(null, createResponse(400, reason)),
           onResolved:  (value) => callback(null, createResponse(200, value))
         });
     },
-    Failure: ({ value }) => createResponse(400, value)
+    Failure: ({ value }) => callback(null, createResponse(400, value))
   });
 };
 
