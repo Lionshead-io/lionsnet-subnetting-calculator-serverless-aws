@@ -5,7 +5,7 @@ title: Creating a VPC
 
 # Creating a VPC 
 
-POST: <API_GATEWAY_URL>/vpc
+POST: https://<API_GATEWAY_URL>/vpc
 
 ```json
 {

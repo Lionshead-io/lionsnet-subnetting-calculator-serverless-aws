@@ -10,7 +10,7 @@ title: Getting Started ∙ Lionsnet
 
 #### Configuring Lionsnet:
 
-POST: <API_GATEWAY_URL>/configuration
+POST: https://<API_GATEWAY_URL>/configuration
 
 ```json
 {
