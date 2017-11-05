@@ -1,13 +1,12 @@
 ---
 id: lionsnet:getting-started
-title: Getting Started ∙ Lionsnet - A Serverless VPC + Subnetting calculator powered by AWS Lambda & DynamoDB.
+title: Getting Started ∙ Lionsnet
 ---
 
 # Getting Started
 
 1. Create CloudFormation Stack using the provided template (cloudformation-template.yaml)
 2. Make a HTTP POST request to /configuration before you start creating VPCs
-3. Create as many VPCs & Subnets as you want
 
 #### Configuring Lionsnet:
 
@@ -33,3 +32,7 @@ $ git clone -o babel-starter-kit \
 $ cd <your-project-name>
 $ npm install
 ```
+
+#### More Documentation:
+
+* [Getting Started](getting-started.md)
