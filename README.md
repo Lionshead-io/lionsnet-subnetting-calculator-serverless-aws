@@ -13,6 +13,11 @@
 ### Documentation
 
 * [Getting Started](docs/getting-started.md)
+* [Getting Started](docs/getting-started.md)
+* [Creating a VPC](docs/recipes/create-vpc.md)
+* [Deleting a VPC](docs/recipes/delete-vpc.md)
+* [Creating Subnets within a VPC](docs/recipes/create-subnet.md)
+* [Deleting Subnets within a VPC](docs/recipes/delete-subnet.md)
 
 
 ## Roadmap
