@@ -59,7 +59,7 @@ Note that the valid 'totalHosts' values provided above all correspond to a CIDR 
 '/16': 65536
 ```
 
-NOTE: If you were to provide a value 'totalHosts' value of 300, which is not a valid value for this field since it does not have a corresponding CIDR prefix, Lionsnet will automatically round down that value to 256. If a less than 256 is provided, Lionsnet will automatically assign the value of 256, since a VPC being provisioned using lionsnet must have at least 256 host addresses assigned to it.
+NOTE: If you were to provide a value 'totalHosts' value of 300, which is not a valid value for this field since it does not have a corresponding CIDR prefix, Lionsnet will automatically round down that value to 256. If a value less than 256 is provided, Lionsnet will automatically assign the value of 256, since a VPC being provisioned using lionsnet must have at least 256 host addresses assigned to it.
 
 #### More Documentation:
 
