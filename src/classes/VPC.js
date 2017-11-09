@@ -8,7 +8,7 @@
  * static getCidrNotation() - Takes (totalHosts: number, networkAddress: Address4) and returns CIDR Notation Address (ex. 100.64.0.0/10)
  * async next() -
  *
- * This source code is licensed under the MIT license found in the
+ * This source code is licensed under the CC BY-SA 4.0 license found in the
  * LICENSE.txt file in the root directory of this source tree.
  */
 import Result from 'folktale/result';
@@ -82,7 +82,6 @@ export default class VPC {
    */
   // $FlowDisableLine
   async next ({ vpcId, totalHosts = 256, subnetCount = 4, hostsPerSubnet = 64 } = {}) {
-    // TODO: finish parameter validation.
     // Make sure that totalHosts, subnetCount, & hostsPerSubnet are all valid integers, if not return a rejected Promise.
     if ( !_isInteger(totalHosts)|| !_isInteger(subnetCount) || !_isInteger(hostsPerSubnet) || ((subnetCount * hostsPerSubnet) > totalHosts) ) return Promise.reject('totalHosts, subnetCount, & hostsPerSubnet must all be valid integers, and subnetCount times hostsPerSubnet must be less than or equal to totalHosts');
 
@@ -140,7 +139,10 @@ export default class VPC {
   }
 
   /**
-   * static generateSubnets() - TODO: describe static method here.
+   * static generateSubnets() - This member will take the number of subnets the user wants provisioned and will append
+   *                            the newly generated subnets to the 'subnets' property of the VPC. This method returns a
+   *                            Result data structure of type Just that wraps a VPC object. If there is an error at any point
+   *                            throughout the process of generating new subnets, this method will return an Error.
    *
    *
    * @param subnetCount int - Number of subnets to provision
