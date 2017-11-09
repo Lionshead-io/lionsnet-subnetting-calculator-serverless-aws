@@ -27,6 +27,7 @@ POST: https://<API_GATEWAY_URL>/vpc
 
 #### 'totalHosts':
 > Min value: 256
+
 > Max value: 65536
 
 Valid values for the total number of hosts per VPC are as follows:
