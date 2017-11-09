@@ -1,6 +1,6 @@
 {
   "name": "lionsnet",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Serverless subnetting calculator powered by AWS Lambda & DynamoDB.",
   "homepage": "https://github.com/Lionshead-io/lionsnet-subnetting-calculator-serverless-aws",
   "repository": "Lionshead-io/lionsnet-subnetting-calculator-serverless-aws",
