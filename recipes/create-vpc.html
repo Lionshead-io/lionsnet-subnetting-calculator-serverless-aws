@@ -1,0 +1,164 @@
+<!doctype html>
+<html class="no-js" lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Creating a VPC</title>
+  <meta name="description" content="Babel Starter Kit is a project template for authoring and publishing JavaScript libraries">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="/lionsnet-subnetting-calculator-serverless-aws/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700italic">
+  <link rel="stylesheet" href="/lionsnet-subnetting-calculator-serverless-aws/main.css">
+</head>
+<body>
+  <div class="header">
+  <div class="container">
+    <a class="header__logo" href="/lionsnet-subnetting-calculator-serverless-aws/">
+      <img class="header__logo-img" src="/lionsnet-subnetting-calculator-serverless-aws/img/babel.svg" alt="Babel" /> Starter Kit
+    </a>
+        <span class="header__author">
+          made with &nbsp;♥&nbsp; by&nbsp; <a href="https://twitter.com/koistya" rel="author" title="Konstantin Tarkus on Twitter">@koistya</a>
+        </span>
+    
+  </div>
+</div>
+
+
+  <div class="content">
+    <div class="content-left">
+      <div class="nav">
+  <h3 class="nav__title">Quick Start</h3>
+  <ul class="nav__menu">
+    <li class="nav__menu-item">
+      <a class="nav__link" href="/lionsnet-subnetting-calculator-serverless-aws/">Overview</a>
+    </li>
+    <li class="nav__menu-item">
+      <a class="nav__link" href="/lionsnet-subnetting-calculator-serverless-aws/getting-started">Getting Started</a>
+    </li>
+  </ul>
+  <h3 class="nav__title">Recipes</h3>
+  <ul class="nav__menu">
+    <li class="nav__menu-item">
+      <a class="nav__link" href="/lionsnet-subnetting-calculator-serverless-aws/recipes/testing-with-mocha-and-jsdom">Testing with <code>mocha</code> and <code>jsdom</code></a>
+    </li>
+    <li class="nav__menu-item">
+      <a class="nav__link" href="/lionsnet-subnetting-calculator-serverless-aws/recipes/throwing-errors-with-fbjs-invariant">Throwing errors with <code>invariant</code></a>
+    </li>
+  </ul>
+</div>
+
+    </div>
+    <div class="content-right">
+      <h1>Creating a VPC</h1>
+<p>POST: https://&lt;API_GATEWAY_URL&gt;/vpc</p>
+<pre><code class="language-json">{
+  &quot;vpcId&quot;: &quot;uniqueVpcId&quot;,
+  &quot;totalHosts&quot;: 256,
+  &quot;subnetCount&quot;: 4,
+  &quot;hostsPerSubnet&quot;: 64
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Properties</th>
+<th style="text-align:center">Description</th>
+<th style="text-align:center">Required</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">vpcId</td>
+<td style="text-align:center">A unique identifier of type 'string'. &quot;vpcId&quot; is the partition key of the DynamoDB Table in which Lionsnet stores all data.</td>
+<td style="text-align:center">yes</td>
+<td>string</td>
+</tr>
+<tr>
+<td style="text-align:center">totalHosts</td>
+<td style="text-align:center">The number of IP Addresses to be allocated to the VPC being generated.Cannot be greater than 65536 (/16).  This value defaults to 256. Take a look at the 'totalHosts' section below.</td>
+<td style="text-align:center">no</td>
+<td>int</td>
+</tr>
+<tr>
+<td style="text-align:center">subnetCount</td>
+<td style="text-align:center">Number of subnets that are to be generated within the VPC being created. This value defaults to 4.</td>
+<td style="text-align:center">no</td>
+<td>int</td>
+</tr>
+<tr>
+<td style="text-align:center">hostsPerSubnet</td>
+<td style="text-align:center">The number of IP Addresses to be allocated to each subnet being provisioned within the new VPC.   This number defaults to 64.   NOTE: (subnetCount * hostsPerSubnet) can NOT be greater than the value provided for totalHosts</td>
+<td style="text-align:center">no</td>
+<td>int</td>
+</tr>
+</tbody>
+</table>
+<h4>'totalHosts':</h4>
+<blockquote>
+<p>Min value: 256</p>
+</blockquote>
+<blockquote>
+<p>Max value: 65536</p>
+</blockquote>
+<p>Valid values for the total number of hosts per VPC are as follows:</p>
+<pre><code class="language-js">256
+512
+1024
+2048
+4096
+8192
+16384
+32768
+65536
+</code></pre>
+<p>Note that the valid 'totalHosts' values provided above all correspond to a CIDR prefix. This CIDR prefixes have been included below for reference.</p>
+<pre><code class="language-js">'CIDR Prefix': '# of hosts'
+ 
+
+'/24': 256
+'/23': 512
+'/22': 1024
+'/21': 2048
+'/20': 4096
+'/19': 8192
+'/18': 16384
+'/17': 32768
+'/16': 65536
+</code></pre>
+<p>NOTE: If you were to provide a value 'totalHosts' value of 300, which is not a valid value for this field since it does not have a corresponding CIDR prefix, Lionsnet will automatically round down that value to 256. If a value less than 256 is provided, Lionsnet will automatically assign the value of 256, since a VPC being provisioned using lionsnet must have at least 256 host addresses assigned to it.</p>
+<h4>More Documentation:</h4>
+<ul>
+<li><a href="../getting-started.md">Getting Started</a></li>
+<li><a href="create-vpc.md">Creating a VPC</a></li>
+<li><a href="delete-vpc.md">Deleting a VPC</a></li>
+<li><a href="create-subnet.md">Creating Subnets within a VPC</a></li>
+<li><a href="delete-subnet.md">Deleting Subnets within a VPC</a></li>
+</ul>
+
+      
+      <div id="disqus_thread"></div>
+      <script>
+         var disqus_config = function () {
+           this.page.url = 'https://www.kriasoft.com/babel-starter-kit/recipes/create-vpc';
+           this.page.identifier = 'lionsnet:recipes:create-vpc';
+         };
+        (function(d) {
+          var s = d.createElement('script');
+          s.src = '//kriasoft.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', +new Date());
+          (d.head || d.body).appendChild(s);
+        })(document);
+      </script>
+      
+    </div>
+  </div>
+  <script src="/lionsnet-subnetting-calculator-serverless-aws/main.js"></script>
+  <script>
+    window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
+    ga('create','UA-33821884-1','auto');ga('send','pageview')
+  </script>
+  <script id="dsq-count-scr" src="https://kriasoft.disqus.com/count.js" async></script>
+  <script src="https://www.google-analytics.com/analytics.js" async defer></script>
+</body>
+</html>
