@@ -24,15 +24,6 @@ POST: https://<API_GATEWAY_URL>/configuration
 | DefaultWorkspace | An IPV4 global address the with a valid CIDR prefix which will be used to sequentially generate VPCs. Ex. "100.64.0.0/10" |    yes   |
     
 
-```sh
-$ git clone -o babel-starter-kit \
-      -b master --single-branch \
-      https://github.com/kriasoft/babel-starter-kit.git \
-      <your-project-name>
-$ cd <your-project-name>
-$ npm install
-```
-
 #### More Documentation:
 
 * [Getting Started](getting-started.md)
