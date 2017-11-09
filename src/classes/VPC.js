@@ -84,7 +84,7 @@ export default class VPC {
   async next ({ vpcId, totalHosts = 256, subnetCount = 4, hostsPerSubnet = 64 } = {}) {
     // TODO: finish parameter validation.
     // Make sure that totalHosts, subnetCount, & hostsPerSubnet are all valid integers, if not return a rejected Promise.
-    if (!_isInteger(totalHosts)|| !_isInteger(subnetCount) || !_isInteger(hostsPerSubnet)) return Promise.reject('totalHosts, subnetCount, & hostsPerSubnet must all be valid integers, and subnetCount times hostsPerSubnet must be less than or equal to totalHosts');
+    if ( !_isInteger(totalHosts)|| !_isInteger(subnetCount) || !_isInteger(hostsPerSubnet) || ((subnetCount * hostsPerSubnet) > totalHosts) ) return Promise.reject('totalHosts, subnetCount, & hostsPerSubnet must all be valid integers, and subnetCount times hostsPerSubnet must be less than or equal to totalHosts');
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
