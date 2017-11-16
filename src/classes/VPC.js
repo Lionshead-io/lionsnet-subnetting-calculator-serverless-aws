@@ -14,6 +14,7 @@
 import Result from 'folktale/result';
 import Maybe from 'folktale/maybe';
 import Validation from 'folktale/validation';
+import { of, rejected, fromPromised } from 'folktale/concurrency/task';
 import R from 'ramda';
 import { mixin as _mixin, isUndefined as _isUndefined, isNumber as _isNumber, toNumber as _toNumber, isNull as _isNull, isInteger as _isInteger } from 'lodash';
 import ip from 'ip';
@@ -21,10 +22,16 @@ import binaryIp from 'binary-ip';
 import numberconvert from 'number-convert';
 import binaryString from 'math-uint32-to-binary-string';
 import { getNetblockRecordT } from '../services/getNetblockRecord';
+import { saveNetblockRecordT } from '../services/saveNetblockRecord';
 import { HOSTS_TO_PREFIX, PREFIX_TO_HOSTS } from '../helpers/cidrEnum';
 import addBinary from '../helpers/addBinary';
 import totalHostsTransformer from '../helpers/totalHosts.transformer';
 import hostsPerSubnetTransformer from '../helpers/hostsPerSubnet.transformer';
+import checkForReleasedBlocks from '../helpers/checkForReleasedBlocks';
+import parseNetblockRecord from '../helpers/parseNetblockRecord';
+import orCombinator from '../helpers/orCombinator';
+import thunkify from '../helpers/thunkify';
+import IncrementedOrReleasedBlock from '../unions/incrementedOrReleasedBlock';
 
 const Address4 = require('ip-address').Address4;
 
@@ -118,10 +125,45 @@ export default class VPC {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     let [lastNetblockUsed, hostAddressesUsed] = await (getNetblockRecordT()
                                 .map(res => res || {})
-                                .map(res => [(res.lastNetblockUsed && (_isNumber(_toNumber(res.lastNetblockUsed))) ? _toNumber(res.lastNetblockUsed) : null), (res.lastNetblockUsed) ? ( (_toNumber(res.lastNetblockUsed) + 1) * 256 ) : 0])
+                                // .map(res => orCombinator(thunkify(checkForReleasedBlocks, totalHosts, res), thunkify(parseNetblockRecord, res)))
+                                // Check for released netblocks that match the number of netblocks needed to fulfill the request
+                                .chain(res =>
+                                  checkForReleasedBlocks(res, (safeTotalHosts / 256)).matchWith({
+                                    Incremented: ({ value }) => {
+                                      return of(value);
+                                    },
+                                    Released: ({ value }) => {
+                                      const nextReleasedBlocksArr = res.releasedBlocks.filter(currVal => currVal.startNetblock !== value.lastNetblockUsed);
+                                      const nextNetblockRecord = {
+                                        ...res,
+                                        ...((nextReleasedBlocksArr.length) ? { releasedBlocks: nextReleasedBlocksArr } : { releasedBlocks: [] })
+                                      };
+                                      (!nextNetblockRecord.releasedBlocks.length) && delete nextNetblockRecord.releasedBlocks;
+
+                                      // Q: Why are we subtracting one from lastNetblockUsed?
+                                      // A: We are doing this because parseNetblockRecord(netblockRecord) will add 1 to lastNetblockUsed
+                                      //    to get the next available netblock record. We are adding one so we don't overwrite previously
+                                      //    used netblock records. We are subtracting here because we are using 'RELEASED' netblocks and since
+                                      //    the lastNetblockUsed value that we currently have within the scope of this function is in fact the
+                                      //    first/start netblock record that will be used to provision this VPC. We simply want to reuse the 'START' Netblock that was'
+                                      //    previously released for reuse.
+                                      // Message from Author: I apologize for this type of deception. I currently don't have time to go back and refactor.
+                                      //                      However, a issue has been created and its progress can be tracked at (https://trello.com/c/mbvie4Ub/)
+                                      return saveNetblockRecordT(nextNetblockRecord).map(_ => ({ lastNetblockUsed: value.lastNetblockUsed - 1 }));
+                                    },
+                                    Nil: () => {
+                                      return of(res);
+                                    }
+                                  })
+                                )
+                                .map(res => R.tap(_ => console.log(res, 'after chain -> checkForReleasedBlocks'), res))
+                                .map(res => parseNetblockRecord(res))
+                                .map(res => R.tap(_ => console.log(res, 'after map -> parseNetblockRecord'), res))
                                 .map(res => R.tap(x => { addVpcMetadata = addVpcMetadata(x[0]) }, res))
                                 .run()
                                 .promise());
+
+    debugger;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

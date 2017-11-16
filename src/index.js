@@ -17,6 +17,9 @@ import subnetCountValidator from './validators/subnetCount';
 import { hostsPerSubnetIsNumber } from './validators/hostsPerSubnet';
 import ipAddressValidator from './validators/ipAddress';
 import createResponse from './helpers/createResponse';
+import allNetblocksUsed from './helpers/allNetblocksUsed';
+import thunkify from './helpers/thunkify';
+import orCombinatorT from './helpers/orCombinator';
 import VPC from './classes/VPC';
 
 exports.getVpc = (event, context, callback) => {
@@ -62,6 +65,8 @@ exports.createVpc = (event, context, callback) => {
   getNetblockRecordT()
     .map(res => res || {})
     .chain(res => (_isEmpty(res)) ? rejected('Error! Lionsnet must be configured before you can start provisioning VPCs.') : of(res))
+    .chain(lastNetblock => allNetblocksUsed(body.totalHosts, lastNetblock))
+    // .chain(lastNetblock => orCombinatorT(thunkify((lnb) => lnb, false), thunkify((lnb) => lnb, lastNetblock)))
     .chain(lastNetblock => vpcIdValidator(body.vpcId).matchWith({
       Success: () => {
         const _VPC = new VPC({ DefaultWorkspace: lastNetblock.DefaultWorkspace });
