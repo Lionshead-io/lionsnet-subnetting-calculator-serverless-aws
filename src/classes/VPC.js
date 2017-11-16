@@ -163,8 +163,6 @@ export default class VPC {
                                 .run()
                                 .promise());
 
-    debugger;
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // First, We are converting 'hostAddressesUsed' which is an unsigned Integer into it's literal bit representation

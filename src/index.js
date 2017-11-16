@@ -75,8 +75,7 @@ exports.createVpc = (event, context, callback) => {
       },
       Failure: ({ value }) => rejected(value)
     }))
-    .chain(vpc => {
-      // At this point VPC is 'Result' data structure
+    .chain(vpc => { // At this point vpc is 'Result' data structure
       return vpc.matchWith({
         Ok: ({ value }) => saveVpcT(value),
         Error: ({ value }) => rejected(value)

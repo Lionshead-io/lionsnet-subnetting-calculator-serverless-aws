@@ -13,7 +13,5 @@ export default function checkForReleasedBlocks(netblockRecord, neededBlocks) {
       .map((currVal) => ({ lastNetblockUsed: currVal.startNetblock }))
   );
 
-  debugger;
-
   return (_isEmpty(result)) ? IncrementedOrReleasedBlock.Incremented(netblockRecord) : IncrementedOrReleasedBlock.Released(result);
 };
