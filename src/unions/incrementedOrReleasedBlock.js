@@ -7,8 +7,8 @@ const IncrementedOrReleasedBlock = union('IncrementedOrReleasedBlock', {
   Released(value) {
     return { value };
   },
-  Nil() {
-    return {};
+  Nil(value) {
+    return { value };
   }
 });
 
@@ -22,7 +22,6 @@ Object.defineProperty(IncrementedOrReleasedBlock, 'value', {
 });
 
 IncrementedOrReleasedBlock.or = function (fn) {
-  console.log(this, fn, 'this');
   return this.matchWith({
     Incremented: ({ value }) => {
       return this;
@@ -31,7 +30,6 @@ IncrementedOrReleasedBlock.or = function (fn) {
       return this;
     },
     Nil: () => {
-      console.log('matchWith -> Nil');
       return fn();
     }
   });

@@ -18,8 +18,6 @@ import { hostsPerSubnetIsNumber } from './validators/hostsPerSubnet';
 import ipAddressValidator from './validators/ipAddress';
 import createResponse from './helpers/createResponse';
 import allNetblocksUsed from './helpers/allNetblocksUsed';
-import thunkify from './helpers/thunkify';
-import orCombinatorT from './helpers/orCombinator';
 import VPC from './classes/VPC';
 
 exports.getVpc = (event, context, callback) => {
@@ -44,8 +42,6 @@ exports.getVpc = (event, context, callback) => {
 exports.createVpc = (event, context, callback) => {
   const body = JSON.parse(event.body || '{}');
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //
   // The steps and actions that occur to create & persist a new VPC are provided below. It is a multi-step process
   // that involves a few Folktale data structures (Validation, Task, & Result)
   //
@@ -60,8 +56,6 @@ exports.createVpc = (event, context, callback) => {
   //          or in an error 'Error(err)' while trying to generate a new VPC.
   // 4) Lastly, we chain the final Task to increment the 'LAST_NETBLOCK' record with the last used Netblock by this newly
   //          generated VPC via the updateNetblockRecord Task (updateNetblockRecordT).
-  //
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   getNetblockRecordT()
     .map(res => res || {})
     .chain(res => (_isEmpty(res)) ? rejected('Error! Lionsnet must be configured before you can start provisioning VPCs.') : of(res))
@@ -77,11 +71,11 @@ exports.createVpc = (event, context, callback) => {
     }))
     .chain(vpc => { // At this point vpc is 'Result' data structure
       return vpc.matchWith({
-        Ok: ({ value }) => saveVpcT(value),
-        Error: ({ value }) => rejected(value)
+        Released: ({ value }) => saveVpcT(value),
+        Incremented: ({ value }) => saveVpcT(value).chain(newVpc => updateNetblockRecordT(newVpc.endNetblock).map(_ => newVpc)),
+        Nil: ({ value }) => rejected(value)
       });
     })
-    .chain(newVpc => updateNetblockRecordT(newVpc.endNetblock).map(_ => newVpc))
     .run()
     .listen({
       onRejected:  (reason) => callback(null, createResponse(400, reason)),
@@ -162,7 +156,6 @@ exports.deleteSubnet = (event, context, callback) => {
     .concat(ipAddressValidator(subnetNetworkAddress))
     .matchWith({
       Success: () => {
-        console.log(subnetNetworkAddress, 'deleteSubnet -> Success -> networkAddress');
         getVpcT(vpcId)
           .map(res => res || {})
           .chain(res => (_isEmpty(res)) ? rejected('Error! The VPC you are trying to modify does NOT exist.') : of(res))

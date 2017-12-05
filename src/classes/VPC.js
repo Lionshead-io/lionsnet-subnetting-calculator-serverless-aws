@@ -13,7 +13,6 @@
  */
 import Result from 'folktale/result';
 import Maybe from 'folktale/maybe';
-import Validation from 'folktale/validation';
 import { of, rejected, fromPromised } from 'folktale/concurrency/task';
 import R from 'ramda';
 import { mixin as _mixin, isUndefined as _isUndefined, isNumber as _isNumber, toNumber as _toNumber, isNull as _isNull, isInteger as _isInteger } from 'lodash';
@@ -29,8 +28,6 @@ import totalHostsTransformer from '../helpers/totalHosts.transformer';
 import hostsPerSubnetTransformer from '../helpers/hostsPerSubnet.transformer';
 import checkForReleasedBlocks from '../helpers/checkForReleasedBlocks';
 import parseNetblockRecord from '../helpers/parseNetblockRecord';
-import orCombinator from '../helpers/orCombinator';
-import thunkify from '../helpers/thunkify';
 import IncrementedOrReleasedBlock from '../unions/incrementedOrReleasedBlock';
 
 const Address4 = require('ip-address').Address4;
@@ -92,13 +89,11 @@ export default class VPC {
     // Make sure that totalHosts, subnetCount, & hostsPerSubnet are all valid integers, if not return a rejected Promise.
     if ( !_isInteger(totalHosts)|| !_isInteger(subnetCount) || !_isInteger(hostsPerSubnet) || ((subnetCount * hostsPerSubnet) > totalHosts) ) return Promise.reject('totalHosts, subnetCount, & hostsPerSubnet must all be valid integers, and subnetCount times hostsPerSubnet must be less than or equal to totalHosts');
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
+    let typeOfNetblocks;
+
     // safeTotalHosts & safeHostsPerSubnet will contain 'SAFE' values that correspond to a CIDR prefix.
     // In the case where a user passes the value of 'totalHosts=257' the value will be rounded down to '256' which
     // corresponds to a CIDR prefix of '/24'.
-    //
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     const safeTotalHosts = totalHostsTransformer(totalHosts);
     const safeHostsPerSubnet = hostsPerSubnetTransformer(hostsPerSubnet, totalHosts);
 
@@ -117,12 +112,8 @@ export default class VPC {
       });
     })(safeTotalHosts / 256);
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
     // After we've retrieved the LAST_NETBLOCK record which contains the 'lastNetblockUsed' we want to add 1 to it & multiply
     // the by 256. The result refers to the number of host addresses that have already been consumed.
-    //
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     let [lastNetblockUsed, hostAddressesUsed] = await (getNetblockRecordT()
                                 .map(res => res || {})
                                 // .map(res => orCombinator(thunkify(checkForReleasedBlocks, totalHosts, res), thunkify(parseNetblockRecord, res)))
@@ -130,9 +121,11 @@ export default class VPC {
                                 .chain(res =>
                                   checkForReleasedBlocks(res, (safeTotalHosts / 256)).matchWith({
                                     Incremented: ({ value }) => {
+                                      typeOfNetblocks = IncrementedOrReleasedBlock.Incremented();
                                       return of(value);
                                     },
                                     Released: ({ value }) => {
+                                      typeOfNetblocks = IncrementedOrReleasedBlock.Released();
                                       const nextReleasedBlocksArr = res.releasedBlocks.filter(currVal => currVal.startNetblock !== value.lastNetblockUsed);
                                       const nextNetblockRecord = {
                                         ...res,
@@ -145,37 +138,45 @@ export default class VPC {
                                       //    to get the next available netblock record. We are adding one so we don't overwrite previously
                                       //    used netblock records. We are subtracting here because we are using 'RELEASED' netblocks and since
                                       //    the lastNetblockUsed value that we currently have within the scope of this function is in fact the
-                                      //    first/start netblock record that will be used to provision this VPC. We simply want to reuse the 'START' Netblock that was'
+                                      //    first/start netblock record that will be used to provision this VPC. We simply want to reuse the 'START' Netblock that was
                                       //    previously released for reuse.
                                       // Message from Author: I apologize for this type of deception. I currently don't have time to go back and refactor.
                                       //                      However, a issue has been created and its progress can be tracked at (https://trello.com/c/mbvie4Ub/)
                                       return saveNetblockRecordT(nextNetblockRecord).map(_ => ({ lastNetblockUsed: value.lastNetblockUsed - 1 }));
                                     },
                                     Nil: () => {
+                                      typeOfNetblocks = IncrementedOrReleasedBlock.Incremented();
+
                                       return of(res);
                                     }
                                   })
                                 )
-                                .map(res => R.tap(_ => console.log(res, 'after chain -> checkForReleasedBlocks'), res))
                                 .map(res => parseNetblockRecord(res))
-                                .map(res => R.tap(_ => console.log(res, 'after map -> parseNetblockRecord'), res))
                                 .map(res => R.tap(x => { addVpcMetadata = addVpcMetadata(x[0]) }, res))
                                 .run()
                                 .promise());
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
     // First, We are converting 'hostAddressesUsed' which is an unsigned Integer into it's literal bit representation
     // Secondly, we are performing a bitwise addition of 'hostAddressesUsed' & the bit representation of the DefaultWorkspace IP address.
-    //
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     const totalHostsBinary = binaryString(hostAddressesUsed);
     const nextNetworkAddress = addBinary(totalHostsBinary, this.DefaultWorkspaceBinary);
 
     const buildVpc = R.compose(addVpcMetadata, ip.cidrSubnet, getCidrNotationCurried, Address4.fromHex, numberconvert.binToHex);
     const buildSubnets = R.compose(generateSubnetsCurried);
 
-    return R.compose(buildSubnets, buildVpc)(nextNetworkAddress);
+    // buildSubnets returns a Result data structure
+    return R.compose(buildSubnets, buildVpc)(nextNetworkAddress).matchWith({
+      Ok: ({ value }) => {
+        let a = IncrementedOrReleasedBlock.Incremented.hasInstance(typeOfNetblocks);
+
+        debugger;
+
+        return (IncrementedOrReleasedBlock.Incremented.hasInstance(typeOfNetblocks)) ? IncrementedOrReleasedBlock.Incremented(value) : IncrementedOrReleasedBlock.Released(value);
+      },
+      Error: ({ value }) => {
+        return IncrementedOrReleasedBlock.Nil(value);
+      }
+    });
   }
 
   /**
@@ -260,15 +261,12 @@ export default class VPC {
       }
     };
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // First off, we are creating an accumulated object that contains
     //      a) totalBlocks - Total # of Netblocks needed to provision the specified number of subnets with their corresponding
     //                       number host address. This is calculated (numberOfSubnet * hostAddressesPerSubnet) / 16.
     //                       REMEMBER: Subnets have a minimum size of 16 host addresses (CIDR prefix of /28).
     //      b) usedBlocks - Total # of used Netblocks by all subnets that have been provisioned within that VPC.
     //                      We iterate over each subnet in the VPC.
-    //
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     return Result.fromMaybe(
       Maybe.Just()
         .chain(_ => totalBlocks(vpc))
