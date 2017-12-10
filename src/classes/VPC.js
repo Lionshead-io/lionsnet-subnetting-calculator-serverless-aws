@@ -167,10 +167,6 @@ export default class VPC {
     // buildSubnets returns a Result data structure
     return R.compose(buildSubnets, buildVpc)(nextNetworkAddress).matchWith({
       Ok: ({ value }) => {
-        let a = IncrementedOrReleasedBlock.Incremented.hasInstance(typeOfNetblocks);
-
-        debugger;
-
         return (IncrementedOrReleasedBlock.Incremented.hasInstance(typeOfNetblocks)) ? IncrementedOrReleasedBlock.Incremented(value) : IncrementedOrReleasedBlock.Released(value);
       },
       Error: ({ value }) => {
